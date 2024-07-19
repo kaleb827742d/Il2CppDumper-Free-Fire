@@ -118,7 +118,6 @@ namespace Il2CppDumper
 
         private static bool Init(string il2cppPath, string metadataPath, out Metadata metadata, out Il2Cpp il2Cpp)
         {
-            Console.WriteLine($"Il2cppdumper for Free Fire made by tien0246 form iOSGods");
             Console.WriteLine("Initializing metadata...");
             var metadataBytes = File.ReadAllBytes(metadataPath);
             metadata = new Metadata(new MemoryStream(metadataBytes));

@@ -52,7 +52,7 @@ namespace Il2CppDumper
             {
                 throw new InvalidDataException("ERROR: Metadata file supplied is not valid metadata file.");
             }
-            if (version < 16 || version > 29)
+            if (version < 16 || version > 31)
             {
                 throw new NotSupportedException($"ERROR: Metadata file supplied is not a supported version[{version}].");
             }
@@ -75,8 +75,6 @@ namespace Il2CppDumper
                 }
             }
             imageDefs = ReadMetadataClassArray<Il2CppImageDefinition>(header.imagesOffset, header.imagesSize);
-            //Console.WriteLine($"header.imagesOffset: {header.imagesOffset}");
-            //Console.WriteLine($"header.imagesSize: {header.imagesSize}");
             if (Version == 24.2 && header.assembliesSize / 68 < imageDefs.Length)
             {
                 Version = 24.4;
@@ -91,48 +89,27 @@ namespace Il2CppDumper
                 Version = 24.4;
             }
             assemblyDefs = ReadMetadataClassArray<Il2CppAssemblyDefinition>(header.assembliesOffset, header.assembliesSize);
-
             if (v241Plus)
             {
                 Version = 24.1;
             }
             typeDefs = ReadMetadataClassArray<Il2CppTypeDefinition>(header.typeDefinitionsOffset, header.typeDefinitionsSize);
-            // Console.WriteLine($"header.typeDefinitionsOffset: {header.typeDefinitionsOffset}");
-            // Console.WriteLine($"header.typeDefinitionsSize: {header.typeDefinitionsSize}");
-            // Console.WriteLine($"typeDefs.Length: {typeDefs.Length}");
             methodDefs = ReadMetadataClassArray<Il2CppMethodDefinition>(header.methodsOffset, header.methodsSize);
-            Console.WriteLine($"header.methodsOffset: {header.methodsOffset}");
-            // Console.WriteLine($"header.methodsSize: {header.methodsSize}");
-            // Console.WriteLine($"methodDefs.Length: {methodDefs.Length}");
             parameterDefs = ReadMetadataClassArray<Il2CppParameterDefinition>(header.parametersOffset, header.parametersSize);
-            // Console.WriteLine($"header.parametersOffset: {header.parametersOffset}");
-            // Console.WriteLine($"header.parametersSize: {header.parametersSize}");
             fieldDefs = ReadMetadataClassArray<Il2CppFieldDefinition>(header.fieldsOffset, header.fieldsSize);
-            // Console.WriteLine($"header.fieldsOffset: {header.fieldsOffset}");
             var fieldDefaultValues = ReadMetadataClassArray<Il2CppFieldDefaultValue>(header.fieldDefaultValuesOffset, header.fieldDefaultValuesSize);
             var parameterDefaultValues = ReadMetadataClassArray<Il2CppParameterDefaultValue>(header.parameterDefaultValuesOffset, header.parameterDefaultValuesSize);
             fieldDefaultValuesDic = fieldDefaultValues.ToDictionary(x => x.fieldIndex);
             parameterDefaultValuesDic = parameterDefaultValues.ToDictionary(x => x.parameterIndex);
             propertyDefs = ReadMetadataClassArray<Il2CppPropertyDefinition>(header.propertiesOffset, header.propertiesSize);
-            // Console.WriteLine($"header.propertiesOffset: {header.propertiesOffset}");
             interfaceIndices = ReadClassArray<int>(header.interfacesOffset, header.interfacesSize / 4);
             nestedTypeIndices = ReadClassArray<int>(header.nestedTypesOffset, header.nestedTypesSize / 4);
             eventDefs = ReadMetadataClassArray<Il2CppEventDefinition>(header.eventsOffset, header.eventsSize);
-            // Console.WriteLine($"eventsOffset: {header.eventsOffset}");
             genericContainers = ReadMetadataClassArray<Il2CppGenericContainer>(header.genericContainersOffset, header.genericContainersSize);
-            // Console.WriteLine($"genericContainersOffset: {header.genericContainersOffset}");
             genericParameters = ReadMetadataClassArray<Il2CppGenericParameter>(header.genericParametersOffset, header.genericParametersSize);
-            // Console.WriteLine($"genericParametersOffset: {header.genericParametersOffset}");
             constraintIndices = ReadClassArray<int>(header.genericParameterConstraintsOffset, header.genericParameterConstraintsSize / 4);
             vtableMethods = ReadClassArray<uint>(header.vtableMethodsOffset, header.vtableMethodsSize / 4);
             stringLiterals = ReadMetadataClassArray<Il2CppStringLiteral>(header.stringLiteralOffset, header.stringLiteralSize);
-            // Console.WriteLine($"stringLiteralOffset: {header.stringLiteralOffset}");
-            // Console.WriteLine($"typeDefinitionsSize: {header.typeDefinitionsSize}");
-            //Console.WriteLine($"methodsSize: {header.methodsSize}");
-            // Console.WriteLine($"imagesSize: {header.imagesSize}");
-            // Console.WriteLine($"metadataUsagePairsCount: {header.metadataUsagePairsCount}");
-            // Console.WriteLine($"version: {header.version}");
-            //Console.WriteLine($"assembliesOffset: {header.assembliesOffset}");
             if (Version > 16)
             {
                 fieldRefs = ReadMetadataClassArray<Il2CppFieldRef>(header.fieldRefsOffset, header.fieldRefsSize);
@@ -140,6 +117,7 @@ namespace Il2CppDumper
                 {
                     metadataUsageLists = ReadMetadataClassArray<Il2CppMetadataUsageList>(header.metadataUsageListsOffset, header.metadataUsageListsCount);
                     metadataUsagePairs = ReadMetadataClassArray<Il2CppMetadataUsagePair>(header.metadataUsagePairsOffset, header.metadataUsagePairsCount);
+
                     ProcessingMetadataUsage();
                 }
             }
@@ -247,7 +225,7 @@ namespace Il2CppDumper
                 for (int i = 0; i < metadataUsageList.count; i++)
                 {
                     var offset = metadataUsageList.start + i;
-                    if (offset >= metadataUsagePairs.Length - 1)
+                    if (offset >= metadataUsagePairs.Length)
                     {
                         continue;
                     }
